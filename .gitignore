@@ -1,0 +1,31 @@
+# --- Datos personales: NUNCA subir documentos reales a un repo público ---
+# Carpetas de trabajo para tus ficheros de entrada/salida.
+input/
+output/
+private/
+*_marca_agua.pdf
+
+# Documentos e imágenes sueltos en la raíz o carpetas de herramientas
+# (coméntalo si quieres versionar ejemplos concretos a mano).
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.tif
+*.tiff
+*.bmp
+*.heic
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.env
+
+# --- Sistema operativo ---
+.DS_Store
+Thumbs.db

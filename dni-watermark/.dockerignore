@@ -1,0 +1,14 @@
+README.md
+Dockerfile
+.dockerignore
+# Nunca metas documentos personales dentro de la imagen
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.tif
+*.tiff
+*.bmp
+*.heic
+__pycache__/
