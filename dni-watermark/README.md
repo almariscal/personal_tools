@@ -4,10 +4,11 @@ Añade una **marca de agua** a tu DNI (o cualquier documento) y genera un **PDF
 protegido**, pensado para enviar copias de forma segura — por ejemplo, mandar el
 DNI a la guardería, al colegio, a un casero, etc.
 
-- ✅ Marca de agua **repetida en diagonal por toda la página** (no se puede recortar).
+- ✅ Marca de agua **repetida en diagonal por toda la página** (no se puede recortar), con **opacidad y tamaño ajustables**.
 - ✅ **Fecha automática** y texto configurable (deja constancia del propósito).
 - ✅ Acepta **fotos/escaneos** (JPG, PNG…) o **PDF**. Junta varias caras/páginas en un solo PDF.
 - ✅ PDF **cifrado (AES-256)**: se abre sin contraseña pero **no se puede copiar ni editar**; opcionalmente, contraseña de apertura.
+- ✅ **Firma y bloqueo tipo certificado digital** (`--sign`): sello visible + documento a prueba de manipulaciones.
 - 🔒 **100% local**: ningún dato sale de tu ordenador.
 
 > **Nota honesta:** la marca de agua es la protección real y disuasoria. Los
@@ -99,6 +100,59 @@ docker run --rm -it -v "$PWD:/data" dni-watermark
 
 ---
 
+## 🎨 Ajustar la intensidad y el tamaño de la marca
+
+Para envíos donde necesitas la marca **más opaca** (más difícil de ignorar o de
+disimular en una captura), sube la opacidad y, si quieres, el tamaño:
+
+```bash
+# Marca más opaca y un poco más grande
+python dni_watermark.py dni.jpg -t "Copia para la guarderia" --opacity 0.5 --size 1.2
+```
+
+- `--opacity` va de `0.0` (invisible) a `1.0` (totalmente opaca). Por defecto `0.28`.
+- `--size` es un multiplicador del tamaño del texto (`1.0` = normal, `1.5` = más grande).
+
+## 🔏 Firmar y bloquear (como un certificado digital)
+
+Con `--sign` el PDF se **firma con una firma de certificación**: añade un **sello
+visible** abajo a la izquierda (*"DNI · uso limitado · bloqueado el …"*) y deja el
+documento **a prueba de manipulaciones** — cualquier edición posterior **invalida
+la firma**, igual que cuando firmas con certificado digital. En el visor aparece
+en el panel de firmas de la izquierda.
+
+```bash
+# Firmar y bloquear (certificado autofirmado, generado al vuelo)
+python dni_watermark.py anverso.jpg reverso.jpg --sign -t "Copia para la guarderia - solo matricula"
+
+# Firmar con TU certificado digital (.p12 / .pfx) → firma verificada
+python dni_watermark.py dni.jpg --sign --cert mi_certificado.p12 --cert-password ****
+
+# Personalizar el texto del sello
+python dni_watermark.py dni.jpg --sign --sign-text "DNI para la guarderia - bloqueado 2026"
+```
+
+> **Autofirmado vs. certificado propio.** Sin `--cert` se genera un certificado
+> autofirmado: la firma es válida y **bloquea el documento igual**, pero el visor
+> mostrará *"identidad no verificada"* (no viene de una autoridad de confianza).
+> Si quieres que salga como **firma verificada** (marca verde), usa `--cert` con
+> tu certificado digital real (p. ej. el de la **FNMT**) exportado a `.p12`/`.pfx`.
+
+> El modo firma **no se combina con el cifrado** (`--password`): la propia firma
+> de certificación ya bloquea la edición. Elige uno u otro:
+> **cifrado** (evita copiar texto) **o** **firma** (bloqueo a prueba de manipulaciones).
+
+## 📸 ¿Se pueden bloquear las capturas de pantalla?
+
+**Con honestidad: no.** Ningún PDF puede impedir que el sistema operativo haga una
+captura de pantalla — eso solo lo consiguen apps con DRM a nivel de sistema (como
+las de vídeo en streaming), no un fichero PDF. Cualquier visor puede capturarse.
+
+La defensa real frente a esto es **la propia marca de agua**: si alguien hace una
+captura, **la captura sale igualmente marcada** con el propósito y la fecha. Por
+eso, para este caso, lo práctico es subir la opacidad/tamaño (`--opacity`,
+`--size`) para que la marca sea imposible de pasar por alto.
+
 ## Opciones
 
 | Opción | Descripción |
@@ -106,10 +160,17 @@ docker run --rm -it -v "$PWD:/data" dni-watermark
 | `inputs` | Una o más imágenes/PDF (ej. las dos caras del DNI). |
 | `-t`, `--text` | Texto de la marca de agua. |
 | `-o`, `--output` | Ruta del PDF de salida. |
-| `--password` | Contraseña para **abrir** el PDF (opcional). |
 | `--no-date` | No añadir la fecha de hoy a la marca. |
+| `--opacity` | Opacidad de la marca `0.0`–`1.0` (por defecto `0.28`). |
+| `--size` | Tamaño del texto de la marca (`1.0` = normal). |
+| `--password` | Contraseña para **abrir** el PDF (modo cifrado). |
 | `--allow-copy` | Permitir copiar texto del PDF (por defecto: no). |
 | `--no-print` | No permitir imprimir el PDF. |
+| `--sign` | Firmar y **bloquear** el documento (a prueba de manipulaciones). |
+| `--cert` | Tu certificado `.p12`/`.pfx` para firmar (si se omite, se autofirma). |
+| `--cert-password` | Contraseña de tu certificado. |
+| `--sign-text` | Texto del sello visible de la firma. |
+| `--signer` | Nombre del firmante al autofirmar. |
 
 Si no indicas `-o/--output`, el PDF se guarda junto al primer fichero con el
 sufijo `_marca_agua.pdf`.

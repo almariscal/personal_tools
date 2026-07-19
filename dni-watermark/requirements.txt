@@ -2,3 +2,5 @@ pypdf>=4.0
 reportlab>=4.0
 Pillow>=10.0
 cryptography>=42.0
+# Solo necesario para firmar y bloquear el PDF (--sign):
+pyhanko>=0.25
